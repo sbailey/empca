@@ -21,6 +21,14 @@ return a Model object:
 
     m = lower_rank(data, weights, options...)
     m = classic_pca(data)  #- but no weights or even options...
+
+Everything is self contained in empca.py .  Just put that into your
+PYTHONPATH and "pydoc empca" for more details.  For a quick test
+on toy example data, run
+
+    python empca.py
+
+Requires numpy and scipy; will make plots if you have pylab installed.
     
 Stephen Bailey, Spring 2012
 
