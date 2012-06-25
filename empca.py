@@ -150,8 +150,18 @@ class Model(object):
         """
         Returns sum( (model-data)^2 / weights
         """
+        ii = N.where(self.weights>0)
         delta = (self.model - self.data) * N.sqrt(self.weights)
-        return N.sum(delta**2)
+        return N.sum(delta[ii]**2)
+        
+    def rchi2(self):
+        """
+        Returns reduced chi2 = chi2/dof
+        """
+
+        ii = N.where(self.weights>0)
+        dof = self.data[ii].size - self.eigvec.size  - self.nvec  #- (?)
+        return self.chi2() / dof
         
     def _model_vec(self, i):
         """Return the model using just eigvec i"""
@@ -167,7 +177,8 @@ class Model(object):
         """
         
         d = self._model_vec(i) - self.data
-        return 1.0 - N.var(d) / N.var(self.data)
+        ii = N.where(self.weights>0)   #- only unmasked data
+        return 1.0 - N.var(d[ii]) / N.var(self.data[ii])
         
     def R2(self, nvec=None):
         """
@@ -289,8 +300,8 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
         dchi02 = (chi2-chi0)/chi2
             
         # print '\rEMPCA %d/%d  %.2g' % (k+1, niter, dchi),
-        print 'EMPCA %d/%d  %10.3g  %10.3g  %10.3g  %10.3g  %15.8f' % \
-            (k+1, niter, chi2/(nobs*nvar), dchi01, dchi12, dchi02, model.R2())
+        print 'EMPCA %d/%d  %10.3g  %10.3g  %10.3g  %10.3g  %15.8f %15.8f' % \
+            (k+1, niter, chi2/(nobs*nvar), dchi01, dchi12, dchi02, model.R2(), model.rchi2())
         sys.stdout.flush()
 
     #- One last time with latest coefficients
@@ -349,11 +360,15 @@ def lower_rank(data, weights, niter=25, nvec=5, randseed=1):
             P[:,j] = _solve(A, b, w) #- x[nvec]
             
         #- Did the model improve?
+        ii = N.where(weights > 0)
         model = C.dot(P)
         delta = (data - model) * N.sqrt(weights)
-        chi2 = N.sum(delta**2)
-        R2 = 1.0 - N.var(data-model) / N.var(data)
-        print '%3d  %9.3g  %15.8f' % (blat, (chi2-oldchi2)/chi2, R2)
+        chi2 = N.sum(delta[ii]**2)
+        diff = data-model
+        R2 = 1.0 - N.var(diff[ii]) / N.var(data[ii])
+        dchi2 = (chi2-oldchi2)/oldchi2   #- fractional improvement in chi2
+        dof = data[ii].size - P.size - nvec 
+        print '%3d  %9.3g  %15.8f %15.8f' % (blat, dchi2, R2, chi2/dof)
         oldchi2 = chi2
 
     #- normalize vectors
