@@ -29,6 +29,6 @@ on toy example data, run
     python empca.py
 
 Requires numpy and scipy; will make plots if you have pylab installed.
-    
+
 Stephen Bailey, Spring 2012
 

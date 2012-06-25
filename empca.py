@@ -186,7 +186,11 @@ class Model(object):
             mx += self._model_vec(i)
             
         d = mx - self.data
-        return 1.0 - N.var(d) / N.var(self.data)
+
+        #- Only consider R2 for unmasked data
+        ii = N.where(self.weights>0)
+        
+        return 1.0 - N.var(d[ii]) / N.var(self.data[ii])
                 
 def _random_orthonormal(nvec, nvar, seed=1):
     """
