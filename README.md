@@ -1,4 +1,4 @@
-## empca : Weighted Expectation Maximization Principal Component Analysis ##
+#### empca: Weighted Expectation Maximization Principal Component Analysis ####
 
 Classic PCA is great but it doesn't know how to handle noisy or missing
 data properly.  This module provides Weighted Expectation Maximization PCA,
@@ -32,8 +32,10 @@ Requires numpy and scipy; will make plots if you have pylab installed.
 
 If you use this code in an academic paper, please include an
 acknowledgement such as
+
 > This work uses the Weighted EMPCA code by Stephen Bailey, available
 > at https://github.com/sbailey/empca/
+
 A paper describing the underlying math is in the works,
 but not available for citation yet.
 
