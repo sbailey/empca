@@ -30,5 +30,10 @@ on toy example data, run
 
 Requires numpy and scipy; will make plots if you have pylab installed.
 
-Stephen Bailey, Spring 2012
+If you use this code in an academic paper, please include an acknowledgement
+such as "This work uses the Weighted EMPCA code by Stephen Bailey, available
+at https://github.com/sbailey/empca/".  A paper describing the underlying
+math is in the works, but not available for citation yet.
+
+Stephen Bailey, Summer 2012
 
