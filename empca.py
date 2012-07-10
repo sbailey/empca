@@ -160,7 +160,7 @@ class Model(object):
         """
 
         ii = N.where(self.weights>0)
-        dof = self.data[ii].size - self.eigvec.size  - self.nvec  #- (?)
+        dof = self.data[ii].size - self.eigvec.size  - self.nvec*self.nobs
         return self.chi2() / dof
         
     def _model_vec(self, i):
@@ -281,27 +281,36 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
     #- Basic dimensions
     nobs, nvar = data.shape
     assert data.shape == weights.shape
-    
+
+    #- degrees of freedom for reduced chi2
+    ii = N.where(weights > 0)
+    dof = data[ii].size - nvec*nvar - nvec*nobs 
+
     #- Starting random guess
     eigvec = _random_orthonormal(nvec, nvar, seed=randseed)
     
     model = Model(eigvec, data, weights)
     model.solve_coeffs()
     
+    # print "       iter    chi2/dof     drchi_E     drchi_M   drchi_tot       R2            rchi2"
+    print "       iter        R2             rchi2"
+    
     for k in range(niter):
-        chi0 = model.chi2()
+        chi0 = model.rchi2()
         model.solve_coeffs()
-        chi1 = model.chi2()
+        chi1 = model.rchi2()
         model.solve_eigenvectors(smooth=smooth)
-        chi2 = model.chi2()
+        chi2 = model.rchi2()
 
-        dchi01 = (chi1-chi0)/chi1
-        dchi12 = (chi2-chi1)/chi2
-        dchi02 = (chi2-chi0)/chi2
+        dchi01 = chi1-chi0
+        dchi12 = chi2-chi1
+        dchi02 = chi2-chi0
             
         # print '\rEMPCA %d/%d  %.2g' % (k+1, niter, dchi),
-        print 'EMPCA %d/%d  %10.3g  %10.3g  %10.3g  %10.3g  %15.8f %15.8f' % \
-            (k+1, niter, chi2/(nobs*nvar), dchi01, dchi12, dchi02, model.R2(), model.rchi2())
+        # print 'EMPCA %2d/%2d  %10.3g  %10.3g  %10.3g  %10.3g  %15.8f %15.8f' % \
+        #     (k+1, niter, chi2, dchi01, dchi12, dchi02, model.R2(), model.rchi2())
+        print 'EMPCA %2d/%2d  %15.8f %15.8f' % \
+            (k+1, niter, model.R2(), model.rchi2())
         sys.stdout.flush()
 
     #- One last time with latest coefficients
@@ -341,8 +350,12 @@ def lower_rank(data, weights, niter=25, nvec=5, randseed=1):
     nobs, nvar = data.shape
     P = _random_orthonormal(nvec, nvar, seed=randseed)
     C = N.zeros( (nobs, nvec) )
+    ii = N.where(weights > 0)
+    dof = data[ii].size - P.size - nvec*nobs 
 
-    oldchi2 = 1.0
+    print "iter     dchi2       R2             chi2/dof"
+
+    oldchi2 = 1e6*dof
     for blat in range(niter):
         #- Solve for coefficients
         for i in range(nobs):
@@ -360,15 +373,14 @@ def lower_rank(data, weights, niter=25, nvec=5, randseed=1):
             P[:,j] = _solve(A, b, w) #- x[nvec]
             
         #- Did the model improve?
-        ii = N.where(weights > 0)
         model = C.dot(P)
         delta = (data - model) * N.sqrt(weights)
         chi2 = N.sum(delta[ii]**2)
         diff = data-model
         R2 = 1.0 - N.var(diff[ii]) / N.var(data[ii])
         dchi2 = (chi2-oldchi2)/oldchi2   #- fractional improvement in chi2
-        dof = data[ii].size - P.size - nvec 
-        print '%3d  %9.3g  %15.8f %15.8f' % (blat, dchi2, R2, chi2/dof)
+        flag = '-' if chi2<oldchi2 else '+'
+        print '%3d  %9.3g  %15.8f %15.8f %s' % (blat, dchi2, R2, chi2/dof, flag)
         oldchi2 = chi2
 
     #- normalize vectors
