@@ -330,7 +330,7 @@ def classic_pca(data):
     m = Model(v, data, N.ones(data.shape))    
     return m
 
-def lower_rank(data, weights, niter=25, nvec=5, randseed=1):
+def lower_rank(data, weights=None, niter=25, nvec=5, randseed=1):
     """
     Perform iterative lower rank matrix approximation of data[obs, var]
     using weights[obs, var].
@@ -346,6 +346,9 @@ def lower_rank(data, weights, niter=25, nvec=5, randseed=1):
     
     Returns Model object
     """
+    
+    if weights is None:
+        weights = N.ones(data.shape)
     
     nobs, nvar = data.shape
     P = _random_orthonormal(nvec, nvar, seed=randseed)
