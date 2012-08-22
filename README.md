@@ -34,7 +34,7 @@ A paper describing the underlying math has been accepted by the
 Publications of the Astronomy Society of the Pacific (PASP) and is
 available as a pre-print at:
 
-    http://arxiv.org/abs/1208.4122
+http://arxiv.org/abs/1208.4122
 
 If you use this code in an academic paper, please include a citation,
 and optionally an acknowledgement such as:
