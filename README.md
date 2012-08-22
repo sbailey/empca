@@ -28,15 +28,21 @@ on toy example data, run
 
     python empca.py
 
-Requires numpy and scipy; will make plots if you have pylab installed.
+This requires numpy and scipy; it will make plots if you have pylab installed.
 
-A paper describing the underlying math is in the works,
-but not available for citation yet.
-If you use this code in an academic paper, please include an
-acknowledgement such as
+A paper describing the underlying math has been accepted by the
+Publications of the Astronomy Society of the Pacific (PASP) and is
+available as a pre-print at:
 
-> This work uses the Weighted EMPCA code by Stephen Bailey, available
-> at https://github.com/sbailey/empca/
+    http://arxiv.org/abs/1208.4122
+
+If you use this code in an academic paper, please include a citation,
+and optionally an acknowledgement such as:
+
+> This work uses the Weighted EMPCA code by Stephen Bailey,
+> available at https://github.com/sbailey/empca/
+
+The examples in the paper were prepared with version v0.2 of the code.
 
 Stephen Bailey, Summer 2012
 

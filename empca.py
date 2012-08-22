@@ -148,7 +148,7 @@ class Model(object):
                        
     def chi2(self):
         """
-        Returns sum( (model-data)^2 / weights
+        Returns sum( (model-data)^2 / weights )
         """
         ii = N.where(self.weights>0)
         delta = (self.model - self.data) * N.sqrt(self.weights)
@@ -513,6 +513,7 @@ def _main():
     for i in range(nvec): P.plot(m0.eigvec[i])
     P.ylim(-0.2, 0.2)
     P.ylabel("EMPCA")
+    P.title("Eigenvectors")
     
     P.subplot(312)
     for i in range(nvec): P.plot(m1.eigvec[i])
