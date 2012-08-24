@@ -87,7 +87,11 @@ class Model(object):
         Solve for c[i,k] such that data[i] ~= Sum_k: c[i,k] eigvec[k]
         """
         for i in range(self.nobs):
-            self.coeff[i] = _solve(self.eigvec.T, self.data[i], self.weights[i])
+            #- Only do weighted solution if really necessary
+            if N.any(self.weights[i] != self.weights[i,0]):
+                self.coeff[i] = _solve(self.eigvec.T, self.data[i], self.weights[i])
+            else:
+                self.coeff[i] = N.dot(self.eigvec, self.data[i])
             
         self.solve_model()
             
@@ -320,14 +324,17 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
     
     return model
 
-def classic_pca(data):
+def classic_pca(data, nvec=None):
     """
     Perform classic SVD-based PCA of the data[obs, var].
     
     Returns Model object
     """
     u, s, v = N.linalg.svd(data)
-    m = Model(v, data, N.ones(data.shape))    
+    if nvec is None:
+        m = Model(v, data, N.ones(data.shape))    
+    else:
+        m = Model(v[0:nvec], data, N.ones(data.shape))
     return m
 
 def lower_rank(data, weights=None, niter=25, nvec=5, randseed=1):
