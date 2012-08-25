@@ -79,7 +79,11 @@ class Model(object):
         self.nvar = data.shape[1]
         self.coeff = N.zeros( (self.nobs, self.nvec) )
         self.model = N.zeros( self.data.shape )
-
+        
+        #- Calculate degrees of freedom
+        ii = N.where(self.weights>0)
+        self.dof = self.data[ii].size - self.eigvec.size  - self.nvec*self.nobs
+        
         self.solve_coeffs()
         
     def solve_coeffs(self):
@@ -154,18 +158,14 @@ class Model(object):
         """
         Returns sum( (model-data)^2 / weights )
         """
-        ii = N.where(self.weights>0)
         delta = (self.model - self.data) * N.sqrt(self.weights)
-        return N.sum(delta[ii]**2)
+        return N.sum(delta**2)
         
     def rchi2(self):
         """
         Returns reduced chi2 = chi2/dof
         """
-
-        ii = N.where(self.weights>0)
-        dof = self.data[ii].size - self.eigvec.size  - self.nvec*self.nobs
-        return self.chi2() / dof
+        return self.chi2() / self.dof
         
     def _model_vec(self, i):
         """Return the model using just eigvec i"""
