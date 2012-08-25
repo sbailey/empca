@@ -84,6 +84,10 @@ class Model(object):
         ii = N.where(self.weights>0)
         self.dof = self.data[ii].size - self.eigvec.size  - self.nvec*self.nobs
         
+        #- Cache variance of unmasked data
+        self._unmasked = ii
+        self._unmasked_data_var = N.var(self.data[ii])
+        
         self.solve_coeffs()
         
     def solve_coeffs(self):
@@ -181,8 +185,7 @@ class Model(object):
         """
         
         d = self._model_vec(i) - self.data
-        ii = N.where(self.weights>0)   #- only unmasked data
-        return 1.0 - N.var(d[ii]) / N.var(self.data[ii])
+        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
         
     def R2(self, nvec=None):
         """
@@ -194,18 +197,16 @@ class Model(object):
           - Not robust to data outliers.
         """
         if nvec is None:
-            nvec = self.nvec
-            
-        mx = N.zeros(self.data.shape)
-        for i in range(nvec):
-            mx += self._model_vec(i)
+            mx = self.model
+        else:            
+            mx = N.zeros(self.data.shape)
+            for i in range(nvec):
+                mx += self._model_vec(i)
             
         d = mx - self.data
 
         #- Only consider R2 for unmasked data
-        ii = N.where(self.weights>0)
-        
-        return 1.0 - N.var(d[ii]) / N.var(self.data[ii])
+        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
                 
 def _random_orthonormal(nvec, nvar, seed=1):
     """
