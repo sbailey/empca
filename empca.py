@@ -300,19 +300,8 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
     print "       iter        R2             rchi2"
     
     for k in range(niter):
-        chi0 = model.rchi2()
         model.solve_coeffs()
-        chi1 = model.rchi2()
         model.solve_eigenvectors(smooth=smooth)
-        chi2 = model.rchi2()
-
-        dchi01 = chi1-chi0
-        dchi12 = chi2-chi1
-        dchi02 = chi2-chi0
-            
-        # print '\rEMPCA %d/%d  %.2g' % (k+1, niter, dchi),
-        # print 'EMPCA %2d/%2d  %10.3g  %10.3g  %10.3g  %10.3g  %15.8f %15.8f' % \
-        #     (k+1, niter, chi2, dchi01, dchi12, dchi02, model.R2(), model.rchi2())
         print 'EMPCA %2d/%2d  %15.8f %15.8f' % \
             (k+1, niter, model.R2(), model.rchi2())
         sys.stdout.flush()
