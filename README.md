@@ -9,12 +9,25 @@ Given data[nobs, nvar] and weights[nobs, nvar],
 
     m = empca(data, weights, options...)
 
-Returns a Model object m, from which you can inspect the eigenvectors,
+That returns a Model object m, from which you can inspect the eigenvectors,
 coefficients, and reconstructed model, e.g.
 
     pylab.plot( m.eigvec[0] )
     pylab.plot( m.data[0] )
     pylab.plot( m.model[0] )
+    
+If you want to apply the model to new data:
+
+    m.set_data(new_data, new_weights)
+    
+and then it will recalculate m.coeff, m.model, m.rchi2, etc. for the new data.
+
+m.R2() is the fraction of data variance explained by the model, while
+m.R2vec(i) is the amount of variance explained by eigenvector i.
+
+This implementation of EMPCA does *not* subtract the mean from the data.
+If you don't subtract the mean yourself, it will still work, with
+the first eigenvector likely being something similar to the mean.
     
 For comparison, two alternate methods are also implemented which also
 return a Model object:
