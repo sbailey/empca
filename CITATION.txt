@@ -1,0 +1,24 @@
+If you use this code in an academic paper, please include a citation to
+S. Bailey 2012, PASP, 124, 1015 and optionally an acknowledgement such as:
+
+> This work uses the Weighted EMPCA code by Stephen Bailey,
+> available at https://github.com/sbailey/empca/
+
+BibTeX entry:
+
+@ARTICLE{2012PASP..124.1015B,
+   author = {{Bailey}, S.},
+    title = "{Principal Component Analysis with Noisy and/or Missing Data}",
+  journal = {\pasp},
+archivePrefix = "arXiv",
+   eprint = {1208.4122},
+ primaryClass = "astro-ph.IM",
+ keywords = {Data Analysis and Techniques},
+     year = 2012,
+    month = sep,
+   volume = 124,
+    pages = {1015-1023},
+      doi = {10.1086/668105},
+   adsurl = {http://adsabs.harvard.edu/abs/2012PASP..124.1015B},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}

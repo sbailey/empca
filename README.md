@@ -43,14 +43,13 @@ on toy example data, run
 
 This requires numpy and scipy; it will make plots if you have pylab installed.
 
-A paper describing the underlying math has been accepted by the
-Publications of the Astronomy Society of the Pacific (PASP) and is
-available as a pre-print at:
+The paper S. Bailey 2012, PASP, 124, 1015 describes the underlying math
+and is available as a pre-print at:
 
 http://arxiv.org/abs/1208.4122
 
-If you use this code in an academic paper, please include a citation,
-and optionally an acknowledgement such as:
+If you use this code in an academic paper, please include a citation
+as described in CITATION.txt, and optionally an acknowledgement such as:
 
 > This work uses the Weighted EMPCA code by Stephen Bailey,
 > available at https://github.com/sbailey/empca/
