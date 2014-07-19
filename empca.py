@@ -258,7 +258,7 @@ def _solve(A, b, w):
     
 #-------------------------------------------------------------------------
 
-def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
+def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1, silent=False):
     """
     Iteratively solve data[i] = Sum_j: c[i,j] p[j] using weights
     
@@ -297,20 +297,23 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1):
     model = Model(eigvec, data, weights)
     model.solve_coeffs()
     
-    # print "       iter    chi2/dof     drchi_E     drchi_M   drchi_tot       R2            rchi2"
-    print "       iter        R2             rchi2"
+    if not silent:
+        # print "       iter    chi2/dof     drchi_E     drchi_M   drchi_tot       R2            rchi2"
+        print "       iter        R2             rchi2"
     
     for k in range(niter):
         model.solve_coeffs()
         model.solve_eigenvectors(smooth=smooth)
-        print 'EMPCA %2d/%2d  %15.8f %15.8f' % \
-            (k+1, niter, model.R2(), model.rchi2())
-        sys.stdout.flush()
+        if not silent:
+            print 'EMPCA %2d/%2d  %15.8f %15.8f' % \
+                (k+1, niter, model.R2(), model.rchi2())
+            sys.stdout.flush()
 
     #- One last time with latest coefficients
     model.solve_coeffs()
-                
-    print "R2:", model.R2()
+
+    if not silent:
+        print "R2:", model.R2()
     
     return model
 
