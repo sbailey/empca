@@ -28,7 +28,9 @@ return a Model object:
 Stephen Bailey, Spring 2012
 """
 
-import numpy as N
+from __future__ import division, print_function
+
+import numpy as np
 import sys
 from scipy.sparse import dia_matrix
 import scipy.sparse.linalg
@@ -77,16 +79,16 @@ class Model(object):
 
         self.nobs = data.shape[0]
         self.nvar = data.shape[1]
-        self.coeff = N.zeros( (self.nobs, self.nvec) )
-        self.model = N.zeros( self.data.shape )
+        self.coeff = np.zeros( (self.nobs, self.nvec) )
+        self.model = np.zeros( self.data.shape )
         
         #- Calculate degrees of freedom
-        ii = N.where(self.weights>0)
+        ii = np.where(self.weights>0)
         self.dof = self.data[ii].size - self.eigvec.size  - self.nvec*self.nobs
         
         #- Cache variance of unmasked data
         self._unmasked = ii
-        self._unmasked_data_var = N.var(self.data[ii])
+        self._unmasked_data_var = np.var(self.data[ii])
         
         self.solve_coeffs()
         
@@ -96,10 +98,10 @@ class Model(object):
         """
         for i in range(self.nobs):
             #- Only do weighted solution if really necessary
-            if N.any(self.weights[i] != self.weights[i,0]):
+            if np.any(self.weights[i] != self.weights[i,0]):
                 self.coeff[i] = _solve(self.eigvec.T, self.data[i], self.weights[i])
             else:
-                self.coeff[i] = N.dot(self.eigvec, self.data[i])
+                self.coeff[i] = np.dot(self.eigvec, self.data[i])
             
         self.solve_model()
             
@@ -110,7 +112,7 @@ class Model(object):
 
         #- Utility function; faster than numpy.linalg.norm()
         def norm(x):
-            return N.sqrt(N.dot(x, x))
+            return np.sqrt(np.dot(x, x))
             
         #- Make copy of data so we can modify it
         data = self.data.copy()
@@ -133,17 +135,17 @@ class Model(object):
 
             #- Remove this vector from the data before continuing with next
             #? Alternate: Resolve for coefficients before subtracting?
-            #- Loop replaced with equivalent N.outer(c,v) call (faster)
+            #- Loop replaced with equivalent np.outer(c,v) call (faster)
             # for i in range(self.nobs):
             #     data[i] -= self.coeff[i,k] * self.eigvec[k]
                                 
-            data -= N.outer(self.coeff[:,k], self.eigvec[k])    
+            data -= np.outer(self.coeff[:,k], self.eigvec[k])    
 
         #- Renormalize and re-orthogonalize the answer
         self.eigvec[0] /= norm(self.eigvec[0])
         for k in range(1, self.nvec):
             for kx in range(0, k):
-                c = N.dot(self.eigvec[k], self.eigvec[kx])
+                c = np.dot(self.eigvec[k], self.eigvec[kx])
                 self.eigvec[k] -=  c * self.eigvec[kx]
                     
             self.eigvec[k] /= norm(self.eigvec[k])
@@ -162,8 +164,8 @@ class Model(object):
         """
         Returns sum( (model-data)^2 / weights )
         """
-        delta = (self.model - self.data) * N.sqrt(self.weights)
-        return N.sum(delta**2)
+        delta = (self.model - self.data) * np.sqrt(self.weights)
+        return np.sum(delta**2)
         
     def rchi2(self):
         """
@@ -173,7 +175,7 @@ class Model(object):
         
     def _model_vec(self, i):
         """Return the model using just eigvec i"""
-        return N.outer(self.coeff[:, i], self.eigvec[i])
+        return np.outer(self.coeff[:, i], self.eigvec[i])
         
     def R2vec(self, i):
         """
@@ -185,7 +187,7 @@ class Model(object):
         """
         
         d = self._model_vec(i) - self.data
-        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
+        return 1.0 - np.var(d[self._unmasked]) / self._unmasked_data_var
         
     def R2(self, nvec=None):
         """
@@ -199,14 +201,14 @@ class Model(object):
         if nvec is None:
             mx = self.model
         else:            
-            mx = N.zeros(self.data.shape)
+            mx = np.zeros(self.data.shape)
             for i in range(nvec):
                 mx += self._model_vec(i)
             
         d = mx - self.data
 
         #- Only consider R2 for unmasked data
-        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
+        return 1.0 - np.var(d[self._unmasked]) / self._unmasked_data_var
                 
 def _random_orthonormal(nvec, nvar, seed=1):
     """
@@ -216,16 +218,16 @@ def _random_orthonormal(nvec, nvar, seed=1):
     """
 
     if seed is not None:
-        N.random.seed(seed)
+        np.random.seed(seed)
         
-    A = N.random.normal(size=(nvec, nvar))
+    A = np.random.normal(size=(nvec, nvar))
     for i in range(nvec):
-        A[i] /= N.linalg.norm(A[i])
+        A[i] /= np.linalg.norm(A[i])
 
     for i in range(1, nvec):
         for j in range(0, i):
-            A[i] -= N.dot(A[j], A[i]) * A[j]
-            A[i] /= N.linalg.norm(A[i])
+            A[i] -= np.dot(A[j], A[i]) * A[j]
+            A[i] /= np.linalg.norm(A[i])
 
     return A
 
@@ -250,8 +252,8 @@ def _solve(A, b, w):
     if isinstance(A, scipy.sparse.spmatrix):
         x = scipy.sparse.linalg.spsolve(A, b)
     else:
-        # x = N.linalg.solve(A, b)
-        x = N.linalg.lstsq(A, b)[0]
+        # x = np.linalg.solve(A, b)
+        x = np.linalg.lstsq(A, b)[0]
         
     return x
 
@@ -276,7 +278,7 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1, silent=Fal
     """
 
     if weights is None:
-        weights = N.ones(data.shape)
+        weights = np.ones(data.shape)
 
     if smooth>0:
         smooth = SavitzkyGolay(width=smooth)
@@ -288,7 +290,7 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1, silent=Fal
     assert data.shape == weights.shape
 
     #- degrees of freedom for reduced chi2
-    ii = N.where(weights > 0)
+    ii = np.where(weights > 0)
     dof = data[ii].size - nvec*nvar - nvec*nobs 
 
     #- Starting random guess
@@ -298,22 +300,21 @@ def empca(data, weights=None, niter=25, nvec=5, smooth=0, randseed=1, silent=Fal
     model.solve_coeffs()
     
     if not silent:
-        # print "       iter    chi2/dof     drchi_E     drchi_M   drchi_tot       R2            rchi2"
-        print "       iter        R2             rchi2"
+        print("       iter        R2             rchi2")
     
     for k in range(niter):
         model.solve_coeffs()
         model.solve_eigenvectors(smooth=smooth)
         if not silent:
-            print 'EMPCA %2d/%2d  %15.8f %15.8f' % \
-                (k+1, niter, model.R2(), model.rchi2())
+            print('EMPCA %2d/%2d  %15.8f %15.8f' % \
+                (k+1, niter, model.R2(), model.rchi2()))
             sys.stdout.flush()
 
     #- One last time with latest coefficients
     model.solve_coeffs()
 
     if not silent:
-        print "R2:", model.R2()
+        print("R2:", model.R2())
     
     return model
 
@@ -323,11 +324,11 @@ def classic_pca(data, nvec=None):
     
     Returns Model object
     """
-    u, s, v = N.linalg.svd(data)
+    u, s, v = np.linalg.svd(data)
     if nvec is None:
-        m = Model(v, data, N.ones(data.shape))    
+        m = Model(v, data, np.ones(data.shape))    
     else:
-        m = Model(v[0:nvec], data, N.ones(data.shape))
+        m = Model(v[0:nvec], data, np.ones(data.shape))
     return m
 
 def lower_rank(data, weights=None, niter=25, nvec=5, randseed=1):
@@ -348,15 +349,15 @@ def lower_rank(data, weights=None, niter=25, nvec=5, randseed=1):
     """
     
     if weights is None:
-        weights = N.ones(data.shape)
+        weights = np.ones(data.shape)
     
     nobs, nvar = data.shape
     P = _random_orthonormal(nvec, nvar, seed=randseed)
-    C = N.zeros( (nobs, nvec) )
-    ii = N.where(weights > 0)
+    C = np.zeros( (nobs, nvec) )
+    ii = np.where(weights > 0)
     dof = data[ii].size - P.size - nvec*nobs 
 
-    print "iter     dchi2       R2             chi2/dof"
+    print("iter     dchi2       R2             chi2/dof")
 
     oldchi2 = 1e6*dof
     for blat in range(niter):
@@ -377,31 +378,31 @@ def lower_rank(data, weights=None, niter=25, nvec=5, randseed=1):
             
         #- Did the model improve?
         model = C.dot(P)
-        delta = (data - model) * N.sqrt(weights)
-        chi2 = N.sum(delta[ii]**2)
+        delta = (data - model) * np.sqrt(weights)
+        chi2 = np.sum(delta[ii]**2)
         diff = data-model
-        R2 = 1.0 - N.var(diff[ii]) / N.var(data[ii])
+        R2 = 1.0 - np.var(diff[ii]) / np.var(data[ii])
         dchi2 = (chi2-oldchi2)/oldchi2   #- fractional improvement in chi2
         flag = '-' if chi2<oldchi2 else '+'
-        print '%3d  %9.3g  %15.8f %15.8f %s' % (blat, dchi2, R2, chi2/dof, flag)
+        print('%3d  %9.3g  %15.8f %15.8f %s' % (blat, dchi2, R2, chi2/dof, flag))
         oldchi2 = chi2
 
     #- normalize vectors
     for k in range(nvec):
-        P[k] /= N.linalg.norm(P[k])
+        P[k] /= np.linalg.norm(P[k])
 
     m = Model(P, data, weights)
-    print "R2:", m.R2()
+    print("R2:", m.R2())
 
     #- Rotate basis to maximize power in lower eigenvectors
     #--> Doesn't work; wrong rotation
-    # u, s, v = N.linalg.svd(m.coeff, full_matrices=True)
-    # eigvec = N.zeros(m.eigvec.shape)
+    # u, s, v = np.linalg.svd(m.coeff, full_matrices=True)
+    # eigvec = np.zeros(m.eigvec.shape)
     # for i in range(m.nvec):
     #     for j in range(s.shape[0]):
     #         eigvec[i] += v[i,j] * m.eigvec[j]
     # 
-    #     eigvec[i] /= N.linalg.norm(eigvec[i])
+    #     eigvec[i] /= np.linalg.norm(eigvec[i])
     # 
     # m = Model(eigvec, data, weights)
     # print m.R2()
@@ -442,22 +443,22 @@ class SavitzkyGolay(object):
         # ... you might use other interpolation points
         # and maybe other functions than monomials ....
     
-        x = N.arange(-num_points, num_points+1, dtype=int)
+        x = np.arange(-num_points, num_points+1, dtype=int)
         monom = lambda x, deg : math.pow(x, deg)
     
-        A = N.zeros((2*num_points+1, pol_degree+1), float)
+        A = np.zeros((2*num_points+1, pol_degree+1), float)
         for i in range(2*num_points+1):
             for j in range(pol_degree+1):
                 A[i,j] = monom(x[i], j)
             
         # calculate diff_order-th row of inv(A^T A)
-        ATA = N.dot(A.transpose(), A)
-        rhs = N.zeros((pol_degree+1,), float)
+        ATA = np.dot(A.transpose(), A)
+        rhs = np.zeros((pol_degree+1,), float)
         rhs[diff_order] = (-1)**diff_order
-        wvec = N.linalg.solve(ATA, rhs)
+        wvec = np.linalg.solve(ATA, rhs)
     
         # calculate filter-coefficients
-        coeff = N.dot(A, wvec)
+        coeff = np.dot(A, wvec)
     
         return coeff
     
@@ -465,43 +466,43 @@ class SavitzkyGolay(object):
         """
         Applies Savitsky-Golay filtering
         """
-        n = N.size(self._coeff-1)/2
-        res = N.convolve(signal, self._coeff)
+        n = np.size(self._coeff-1)//2
+        res = np.convolve(signal, self._coeff)
         return res[n:-n]
 
 
 def _main():
-    N.random.seed(1)
+    np.random.seed(1)
     nobs = 100
     nvar = 200
     nvec = 3
-    data = N.zeros(shape=(nobs, nvar))
+    data = np.zeros(shape=(nobs, nvar))
 
     #- Generate data
-    x = N.linspace(0, 2*N.pi, nvar)
+    x = np.linspace(0, 2*np.pi, nvar)
     for i in range(nobs):
         for k in range(nvec):
-            c = N.random.normal()
-            data[i] += 5.0*nvec/(k+1)**2 * c * N.sin(x*(k+1))
+            c = np.random.normal()
+            data[i] += 5.0*nvec//(k+1)**2 * c * np.sin(x*(k+1))
 
     #- Add noise
-    sigma = N.ones(shape=data.shape)
-    for i in range(nobs/10):
+    sigma = np.ones(shape=data.shape)
+    for i in range(nobs//10):
         sigma[i] *= 5
-        sigma[i, 0:nvar/4] *= 5
+        sigma[i, 0:nvar//4] *= 5
 
     weights = 1.0 / sigma**2    
-    noisy_data = data + N.random.normal(scale=sigma)
+    noisy_data = data + np.random.normal(scale=sigma)
 
-    print "Testing empca"
+    print("Testing empca")
     m0 = empca(noisy_data, weights, niter=20)
     
-    print "Testing lower rank matrix approximation"
+    print("Testing lower rank matrix approximation")
     m1 = lower_rank(noisy_data, weights, niter=20)
     
-    print "Testing classic PCA"
+    print("Testing classic PCA")
     m2 = classic_pca(noisy_data)
-    print "R2", m2.R2()
+    print("R2", m2.R2())
     
     try:
         import pylab as P
